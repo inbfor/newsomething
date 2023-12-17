@@ -14,10 +14,7 @@ import (
 )
 
 func main() {
-	var conf = map[string]interface{}{
-		"user_storage": map[string]string{},
-		"mediabasket":  map[string]string{},
-	}
+	var conf = map[string][]string{}
 
 	data, err := http.Get("http://prometheus-web.dc.wildberries.ru:9090/api/v1/query?query=max%20by%20(instance)(up{role=~%22.*basket.*%22})")
 	if err != nil {
@@ -37,11 +34,11 @@ func main() {
 
 	for _, item := range config.Data.Result {
 		replica := item.Metric.Instance
-		conf[DecodeReplica(replica)] = replica
+		conf[DecodeReplica(replica)] = append(conf[DecodeReplica(replica)], replica)
 	}
 
 	buf := new(bytes.Buffer)
-	if err := toml.NewEncoder(buf).Encode(config); err != nil {
+	if err := toml.NewEncoder(buf).Encode(conf); err != nil {
 		log.Fatal(err)
 	}
 
@@ -72,15 +69,15 @@ func DecodeReplica(replica string) string {
 
 	switch {
 	case userStorage.MatchString(replica):
-		return "user-storage"
+		return "user_storage"
 	case ordersBasket.MatchString(replica):
 		return "orders-basket"
 	case mediaBasketFirst.MatchString(replica):
-		return "media-basket"
+		return "mediabasket"
 	case mediaBasketSecond.MatchString(replica):
-		return "media-basket"
+		return "mediabasket"
 	case mediaBasketThird.MatchString(replica):
-		return "media-basket"
+		return "mediabasket"
 	case digitalBasketFirst.MatchString(replica):
 		return "digital-basket"
 	case digitalBasketSecond.MatchString(replica):
