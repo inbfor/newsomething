@@ -22,7 +22,7 @@ func main() {
 
 	for _, item := range config.Data.Result {
 		fmt.Println(item.Metric.Instance)
-		fmt.Println(DecodeReplica(item.Metric.Instance))
+		fmt.Println(DecodeReplica(item.Metric.Instance + ".wb.ru"))
 	}
 }
 
