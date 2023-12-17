@@ -1,14 +1,24 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"regexp"
+
+	"github.com/BurntSushi/toml"
 )
 
 func main() {
+	var conf = map[string]interface{}{
+		"user_storage": map[string]string{},
+		"mediabasket":  map[string]string{},
+	}
+
 	data, err := http.Get("http://prometheus-web.dc.wildberries.ru:9090/api/v1/query?query=max%20by%20(instance)(up{role=~%22.*basket.*%22})")
 	if err != nil {
 		fmt.Println("cant get data")
@@ -20,13 +30,26 @@ func main() {
 
 	json.Unmarshal(body, &config)
 
-	for _, item := range config.Data.Result {
-		fmt.Println(item.Metric.Instance)
-		fmt.Println(DecodeReplica(item.Metric.Instance + ".wb.ru"))
+	f, err := os.OpenFile("access.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("cant open file")
 	}
+
+	for _, item := range config.Data.Result {
+		replica := item.Metric.Instance
+		conf[DecodeReplica(replica)] = replica
+	}
+
+	buf := new(bytes.Buffer)
+	if err := toml.NewEncoder(buf).Encode(config); err != nil {
+		log.Fatal(err)
+	}
+
+	f.Write(buf.Bytes())
 }
 
 func DecodeReplica(replica string) string {
+	replica = replica + ".wb.ru"
 	userStorage := regexp.MustCompile(`^user-storage-\d\d\w?(-\d)?.\w\w.wb.ru$`)
 
 	ordersBasket := regexp.MustCompile(`^(catalog-)?mediabasket-orders-(basket-)?(baskets-)?\d\d\w?(-\d)?.\w\w.wb.ru$ `)
