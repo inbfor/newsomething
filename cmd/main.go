@@ -61,6 +61,15 @@ func DecodeReplica(replica string) string {
 	digitalBasketFirst := regexp.MustCompile(`^(catalog-)?mediabasket-digital-(basket-)?(baskets-)?\d\d\w?(-\d)?.\w\w.wb.ru$`)
 	digitalBasketSecond := regexp.MustCompile(`^digital-basket-\d\d\w?(-\d)?.\w\w.wb.ru$`)
 
+	videofeedbackFirst := regexp.MustCompile(`^(catalog-)?mediabasket-videofeedback-(basket-)?(baskets-)?\d\d\w?(-\d)?.\w\w.wb.ru$`)
+	videofeedbackSecond := regexp.MustCompile(`^videofeedback-basket-\d\d\w?(-\d)?.\w\w.wb.ru$`)
+
+	feedbackFirst := regexp.MustCompile(`^feedbackbasket-nsk-cdn-\d\d\w?(-\d)?.\w\w.wb.ru$`)
+	feedbackSecond := regexp.MustCompile(`^(catalog-)?mediabasket-feedback-(basket-)?(baskets-)?\d\d\w?(-\d)?.\w\w.wb.ru$`)
+	feedbackThird := regexp.MustCompile(`^ngx-feedback-basket-\d\d\w?(-\d)?.\w\w.wb.ru$`)
+
+	contentBasket := regexp.MustCompile(`^contentbasket-\d\d\w?(-\d)?.\w\w.wb.ru$`)
+
 	switch {
 	case userStorage.MatchString(replica):
 		return "user-storage"
@@ -76,8 +85,14 @@ func DecodeReplica(replica string) string {
 		return "digital-basket"
 	case digitalBasketSecond.MatchString(replica):
 		return "digital-basket"
+	case videofeedbackFirst.MatchString(replica) || videofeedbackSecond.MatchString(replica):
+		return "videofeedback"
+	case feedbackFirst.MatchString(replica) || feedbackSecond.MatchString(replica) || feedbackThird.MatchString(replica):
+		return "feedback"
+	case contentBasket.MatchString(replica):
+		return "content-basket"
 	default:
-		return "no"
+		return "other"
 	}
 }
 
