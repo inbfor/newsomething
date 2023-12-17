@@ -14,6 +14,7 @@ import (
 )
 
 func main() {
+
 	var conf = map[string][]string{}
 
 	data, err := http.Get("http://prometheus-web.dc.wildberries.ru:9090/api/v1/query?query=max%20by%20(instance)(up{role=~%22.*basket.*%22})")
